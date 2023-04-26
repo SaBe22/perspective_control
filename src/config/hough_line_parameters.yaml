@@ -1,0 +1,9 @@
+gaussian_kernel_size: 5
+canny_aperture_size: 5
+canny_threshold1: 0
+canny_threshold2: 30
+hough_rho: 1
+hough_theta: 0.01745
+hough_threshold: 50
+hough_min_line_length: 75
+hough_max_line_gap: 10

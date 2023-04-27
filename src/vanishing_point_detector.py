@@ -112,7 +112,7 @@ class VanishingPointDetector:
 
         top_20_percentile_indices  = sorted_edge_strength_indices[:edges_descriptor.num_lines // 5]
         top_50_percentile_indices = sorted_edge_strength_indices[:edges_descriptor.num_lines // 2]
-        if len(top_20_percentile_indices) == 0: # can happen if num_lines < 5
+        if len(top_20_percentile_indices) < 1: # can happen if num_lines < 5
             if len(top_50_percentile_indices) > 1:
                 top_20_percentile_indices = top_50_percentile_indices
             else:

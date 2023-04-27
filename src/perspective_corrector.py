@@ -1,7 +1,16 @@
-import numpy as np
+"""
+This module contains a perspective corrector.
+The perspective corrector takes an image and the coordinates of the vanishing point as input,
+    and outputs a corrected image.
+The correction is done by computing the homography matrix that maps the distorted image
+    to a rectified image.
+"""
+
+from typing import Tuple
+
 import cv2
 import matplotlib.pyplot as plt
-from typing import Tuple
+import numpy as np
 
 from src.line_detector import HoughLineDetector, LineSegmentDetector
 from src.vanishing_point_detector import VanishingPointDetector
@@ -16,8 +25,9 @@ class PerspectiveCorrector:
         """
         Initializes a PerspectiveCorrector object.
         Args:
-            line_detector (str): The name of the line detector to be used. Defaults to "LineSegmentDetector".
-            config_line_detector_file (str): Path to a configuration file to be used by the line detector.
+            line_detector (str): The name of the line detector to be used.
+                Defaults to "LineSegmentDetector".
+            config_line_detector_file (str): Path to a configuration file for the line detector.
                 Defaults to None.
         """
         if line_detector not in SUPPORTED_LINE_DETECTOR:
@@ -28,15 +38,17 @@ class PerspectiveCorrector:
         elif line_detector == "HoughLineDetector":
             self.line_detector = HoughLineDetector(config_file=config_line_detector_file)
 
-    def run(self, img, visualize_lines=False, display_corrected_images=False) -> Tuple[np.ndarray, np.ndarray]:
+    def run(self, img, visualize_lines=False, display_corrected_images=False
+            ) -> Tuple[np.ndarray, np.ndarray]:
         """
-        Corrects the perspective of the input image using vanishing points and returns the corrected image.
-
+        Corrects the perspective of the input image using vanishing points and returns
+            the corrected image.
         Args:
             img (numpy.ndarray): The input image to be corrected.
-            visualize_lines (bool): Whether to display the detected lines on the input image. Defaults to False.
-            display_corrected_images (bool): Whether to display the corrected image. Defaults to False.
-
+            visualize_lines (bool): Whether to display the detected lines on the input image.
+                Defaults to False.
+            display_corrected_images (bool): Whether to display the corrected image.
+                Defaults to False.
         Returns:
             numpy.ndarray: The corrected image.
         """
@@ -52,7 +64,7 @@ class PerspectiveCorrector:
         vanishing_horizontal_point = np.array([1, 0, 0])
         height, width, _ = img.shape
 
-        homography = self.find_homography(vanishing_horizontal_point, vanishing_vertical_point, width, height)
+        homography = self.find_homography(vanishing_horizontal_point, vanishing_vertical_point)
         corrected_image = cv2.warpPerspective(img, homography, (width, height))
 
         corners = np.array([
@@ -76,7 +88,7 @@ class PerspectiveCorrector:
         )
 
         if display_corrected_images:
-            fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
+            _, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
             # Display the image in the first column
             axs[0].imshow(img[:,:,::-1])
             axs[0].axis("off")
@@ -97,15 +109,13 @@ class PerspectiveCorrector:
 
 
     @staticmethod
-    def find_homography(vp1: np.ndarray, vp2: np.ndarray, width: int, height: int) -> np.ndarray:
+    def find_homography(vp1: np.ndarray, vp2: np.ndarray) -> np.ndarray:
         """
         Computes the homography matrix for transforming an image using vanishing points.
 
         Args:
             vp1 (np.ndarray): 3D numpy array representing the first vanishing point.
             vp2 (np.ndarray): 3D numpy array representing the second vanishing point.
-            width (int): Width of the input image.
-            height (int): Height of the input image.
 
         Returns:
             np.ndarray: The homography matrix.

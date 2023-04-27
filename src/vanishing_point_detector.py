@@ -1,3 +1,11 @@
+"""
+This module contains a vanishing point detector.
+
+The vanishing point detector takes a list of lines as input,
+and outputs the coordinates of the vanishing point.
+The current implementation uses a voting scheme to estimate the vanishing point from the lines.
+"""
+
 from dataclasses import dataclass
 
 import numpy as np
@@ -91,7 +99,7 @@ class VanishingPointDetector:
         Returns:
         --------
         numpy.ndarray
-            Array of shape (3,) representing the homogeneous coordinates of the detected vanishing point.
+            Array of shape (3,) representing the coordinates of the detected vanishing point.
         """
         if len(lines.shape) < 2:
             # Just one line has been detected so return a point at infinity
@@ -102,9 +110,9 @@ class VanishingPointDetector:
         if len(sorted_edge_strength_indices) < 2:
             return [0, 1, 0] # FIXME: this check could be redundant
 
-        top_20_percentile_indices  = sorted_edge_strength_indices [:edges_descriptor.num_lines // 5] # top 20%
-        top_50_percentile_indices = sorted_edge_strength_indices [:edges_descriptor.num_lines // 2] # top 50%
-        if not len(top_20_percentile_indices): # can happen if num_lines < 5
+        top_20_percentile_indices  = sorted_edge_strength_indices[:edges_descriptor.num_lines // 5]
+        top_50_percentile_indices = sorted_edge_strength_indices[:edges_descriptor.num_lines // 2]
+        if len(top_20_percentile_indices) == 0: # can happen if num_lines < 5
             if len(top_50_percentile_indices) > 1:
                 top_20_percentile_indices = top_50_percentile_indices
             else:
@@ -113,7 +121,7 @@ class VanishingPointDetector:
 
         best_vanishing_point = None
         best_vote = 0
-        for n_iter in range(self.max_iter):
+        for _ in range(self.max_iter):
             idx_1 = np.random.choice(top_20_percentile_indices )
             idx_2 = np.random.choice(top_50_percentile_indices)
 

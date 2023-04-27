@@ -1,3 +1,14 @@
+"""
+This module contains line detection algorithms.
+
+Currently, two algorithms are implemented:
+    - HoughLineDetector: uses Canny edge detection and Hough transform
+    - LineSegmentDetector: uses the LineSegmentDetector method of openCV
+
+These detectors can be used to extract lines from an image, which can then be used to estimate
+    the vanishing point or correct perspective distortion.
+"""
+
 import os
 from abc import ABC, abstractmethod
 
@@ -53,7 +64,6 @@ class CommonLineDetector(ABC):
         Returns:
             np.ndarray: Detected lines as an array of line parameters.
         """
-        pass
 
     @staticmethod
     def visualize_lines(img: np.ndarray, lines: np.ndarray) -> None:
@@ -80,8 +90,9 @@ class CommonLineDetector(ABC):
 
         Args:
             lines (np.ndarray): Array of line parameters.
-            acceptable_angle_offset (float, optional): Acceptable angle offset in degrees for vertical lines.
-                                                     Defaults to 15.
+            acceptable_angle_offset (float, optional):
+                Acceptable angle offset in degrees for vertical.
+                Defaults to 15.
 
         Returns:
             np.ndarray: Filtered array of line parameters containing only vertical lines.
@@ -111,18 +122,22 @@ class HoughLineDetector(CommonLineDetector):
         Initialize the HoughLineDetector.
 
         Args:
-            config_file (str, optional): Path to the configuration file. Defaults to DEFAULT_CONFIG_HOUGH_LINE.
+            config_file (str, optional): Path to the configuration file.
+                Defaults to DEFAULT_CONFIG_HOUGH_LINE.
         """
         super().__init__(config_file)
         # Read parameters from config file
-        self.gaussian_kernel_size = self.config.get("gaussian_kernel_size", DEFAULT_GAUSSIAN_KERNEL_SIZE)
-        self.canny_aperture_size = self.config.get("canny_aperture_size", DEFAULT_CANNY_APERTURE_SIZE)
+        self.gaussian_kernel_size = self.config.get("gaussian_kernel_size",
+                                                    DEFAULT_GAUSSIAN_KERNEL_SIZE)
+        self.canny_aperture_size = self.config.get("canny_aperture_size",
+                                                   DEFAULT_CANNY_APERTURE_SIZE)
         self.canny_threshold1 = self.config.get("canny_threshold1", DEFAULT_CANNY_THRESHOLD_1)
         self.canny_threshold2 = self.config.get("canny_threshold2", DEFAULT_CANNY_THRESHOLD_2)
         self.hough_rho = self.config.get("hough_rho", DEFAULT_HOUGH_RHO)
         self.hough_theta = self.config.get("hough_theta", DEFAULT_HOUGH_THETA)
         self.hough_threshold = self.config.get("hough_threshold", DEFAULT_HOUGH_THRESHOLD)
-        self.hough_min_line_length = self.config.get("hough_min_line_length", DEFAULT_HOUGH_MIN_LINE_LENGTH)
+        self.hough_min_line_length = self.config.get("hough_min_line_length",
+                                                     DEFAULT_HOUGH_MIN_LINE_LENGTH)
         self.hough_max_line_gap = self.config.get("hough_max_line_gap", DEFAULT_HOUGH_MAX_LINE_GAP)
 
     def detect_lines(self, img: np.ndarray) -> np.ndarray:
@@ -137,7 +152,8 @@ class HoughLineDetector(CommonLineDetector):
         """
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (self.gaussian_kernel_size, self.gaussian_kernel_size), 0)
-        edges = cv2.Canny(gray, self.canny_threshold1, self.canny_threshold2, self.canny_aperture_size)
+        edges = cv2.Canny(gray, self.canny_threshold1, self.canny_threshold2,
+                          self.canny_aperture_size)
         hough_lines = cv2.HoughLinesP(
             edges,
             self.hough_rho,
@@ -161,10 +177,12 @@ class LineSegmentDetector(CommonLineDetector):
         Initialize the LineSegmentDetector.
 
         Args:
-            config_file (str, optional): Path to the configuration file. Defaults to DEFAULT_CONFIG_LSD.
+            config_file (str, optional): Path to the configuration file.
+                Defaults to DEFAULT_CONFIG_LSD.
         """
         super().__init__(config_file)
-        self.gaussian_kernel_size = self.config.get("gaussian_kernel_size", DEFAULT_GAUSSIAN_KERNEL_SIZE)
+        self.gaussian_kernel_size = self.config.get("gaussian_kernel_size",
+                                                    DEFAULT_GAUSSIAN_KERNEL_SIZE)
 
     def detect_lines(self, img: np.ndarray) -> np.ndarray:
         """

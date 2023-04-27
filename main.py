@@ -1,5 +1,17 @@
+"""
+This module contains the main script for running the perspective correction pipeline.
+
+The script takes an input image and saves the output corrected image to a file.
+The user can also choose to display the detected
+lines and/or the corrected image on the screen.
+
+Example usage:
+python main.py -i input_image.png -o output_image.png --display_lines --display_results
+"""
+
 import argparse
 import os
+
 import cv2
 
 from src.perspective_corrector import PerspectiveCorrector
@@ -18,19 +30,22 @@ def main() -> None:
     display_results = args.display_results
 
     # Check that the input image is an image
-    if not os.path.exists(input_image_path) or not os.path.splitext(input_image_path)[-1].lower() in SUPPORTED_IMAGES_EXT:
-        raise ValueError(f"Input image given {input_image_path} must be in the following format {SUPPORTED_IMAGES_EXT}")
+    if (
+        not os.path.exists(input_image_path)
+        or not os.path.splitext(input_image_path)[-1].lower() in SUPPORTED_IMAGES_EXT
+    ):
+        raise ValueError(f"Input image given {input_image_path} must be"
+                         " in the following format {SUPPORTED_IMAGES_EXT}")
 
-    try:
-        img = cv2.imread(input_image_path)
-    except:
-        raise ValueError(f"Can't read image {input_image_path}")
+    img = cv2.imread(input_image_path)
 
     perspective_corrector = PerspectiveCorrector()
-    corrected_image, crop_image = perspective_corrector.run(img, visualize_lines=display_lines, display_corrected_images=display_results)
+    _, crop_image = perspective_corrector.run(img, visualize_lines=display_lines,
+                                              display_corrected_images=display_results)
 
     if not os.path.splitext(output_image_path)[-1].lower() in SUPPORTED_IMAGES_EXT:
-        raise ValueError(f"The provided output image path {output_image_path} must be in the following format {SUPPORTED_IMAGES_EXT}")
+        raise ValueError(f"The provided output image path {output_image_path} must be"
+                         " in the following format {SUPPORTED_IMAGES_EXT}")
 
     # Create output folder if it doesn't exist
     output_folder = os.path.dirname(output_image_path)

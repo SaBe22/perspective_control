@@ -25,3 +25,5 @@ Additionally, there are two optional arguments:
 The correction algorithm is based on the detection of vertical vanishing points. Two line detection methods are available: Canny edge detection with Hough transform, or the LineSegmentDetector from OpenCV.
 
 The vanishing point detection and homography estimation is inspired from the paper *Auto-rectification of user photos* by Chaudhury et al. (2014), presented at the IEEE International Conference on Image Processing (ICIP).
+
+**The notebook in ./notebooks/playgroundn.ipynb** demonstrate how to use the method. Follow the instructions in the notebooks to correct your own images.

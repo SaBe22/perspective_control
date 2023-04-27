@@ -93,10 +93,23 @@ class VanishingPointDetector:
         numpy.ndarray
             Array of shape (3,) representing the homogeneous coordinates of the detected vanishing point.
         """
+        if len(lines.shape) < 2:
+            # Just one line has been detected so return a point at infinity
+            return [0, 1, 0]
+
         edges_descriptor = self.preprocess_lines(lines)
         sorted_edge_strength_indices  = np.argsort(edges_descriptor.edges_norm)
+        if len(sorted_edge_strength_indices) < 2:
+            return [0, 1, 0] # FIXME: this check could be redundant
+
         top_20_percentile_indices  = sorted_edge_strength_indices [:edges_descriptor.num_lines // 5] # top 20%
         top_50_percentile_indices = sorted_edge_strength_indices [:edges_descriptor.num_lines // 2] # top 50%
+        if not len(top_20_percentile_indices): # can happen if num_lines < 5
+            if len(top_50_percentile_indices) > 1:
+                top_20_percentile_indices = top_50_percentile_indices
+            else:
+                top_20_percentile_indices = sorted_edge_strength_indices
+                top_50_percentile_indices = sorted_edge_strength_indices
 
         best_vanishing_point = None
         best_vote = 0

@@ -69,7 +69,11 @@ class PerspectiveCorrector:
         y_crop_min = int(np.max([transformed_corners[1,0], transformed_corners[1, 2]]))
         y_crop_max = int(np.min([transformed_corners[1,1], transformed_corners[1, 3]]))
 
-        crop_image = cv2.resize(corrected_image[y_crop_min:y_crop_max, x_crop_min:x_crop_max], (width, height))
+        crop_image = cv2.resize(
+            corrected_image[y_crop_min:y_crop_max, x_crop_min:x_crop_max],
+            (width, height),
+            interpolation=cv2.INTER_CUBIC
+        )
 
         if display_corrected_images:
             fig, axs = plt.subplots(nrows=1, ncols=3, figsize=(10, 5))
@@ -87,6 +91,7 @@ class PerspectiveCorrector:
             axs[2].imshow(crop_image[:,:,::-1])
             axs[2].axis("off")
             axs[2].set_title("Crop Image")
+            plt.show(block=True)
 
         return corrected_image, crop_image
 
@@ -110,35 +115,19 @@ class PerspectiveCorrector:
         H[2] = vanishing_line / vanishing_line[2]
         H = H / H[2, 2]
 
-        # Find directions corresponding to vanishing points
-        v_post1 = H @ vp1
+        # Find vertical vanishing point after homography
         v_post2 = H @ vp2
-        v_post1 = v_post1 / np.sqrt(v_post1[0]**2 + v_post1[1]**2)
         v_post2 = v_post2 / np.sqrt(v_post2[0]**2 + v_post2[1]**2)
+        # Find angle between vertical vanishing point and y axis [0, 1, 0]
+        theta = np.arccos(np.dot(v_post2, [0, 1, 0]) / np.sqrt(v_post2[0]**2 + v_post2[1]**2))
+        # Rotate y axis
+        R = np.array([[1, np.sin(theta), 0],
+            [0, np.cos(theta), 0],
+            [0, 0, 1]])
+        # if reflection,
+        if np.linalg.det(R) < 0:
+            R[:, 1] = -R[:, 1]
 
-        directions = np.array([[v_post1[0], -v_post1[0], v_post2[0], -v_post2[0]],
-                            [v_post1[1], -v_post1[1], v_post2[1], -v_post2[1]]])
-
-        thetas = np.arctan2(directions[0], directions[1])
-
-        # Find direction closest to horizontal axis
-        h_ind = np.argmin(np.abs(thetas))
-
-        # Find positive angle among the rest for the vertical axis
-        if h_ind // 2 == 0:
-            v_ind = 2 + np.argmax([thetas[2], thetas[3]])
-        else:
-            v_ind = np.argmax([thetas[2], thetas[3]])
-
-        A1 = np.array([[directions[0, v_ind], directions[0, h_ind], 0],
-                    [directions[1, v_ind], directions[1, h_ind], 0],
-                    [0, 0, 1]])
-        # Check for reflection and remove if necessary
-        if np.linalg.det(A1) < 0:
-            A1[:, 0] = -A1[:, 0]
-
-        A = np.linalg.inv(A1)
-
-        homography = A @ H
-
+        R = np.linalg.inv(R)
+        homography = R @ H
         return homography

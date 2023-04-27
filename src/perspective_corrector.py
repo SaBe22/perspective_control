@@ -81,6 +81,14 @@ class PerspectiveCorrector:
         y_crop_min = int(np.max([transformed_corners[1,0], transformed_corners[1, 2]]))
         y_crop_max = int(np.min([transformed_corners[1,1], transformed_corners[1, 3]]))
 
+        # TODO: find a better way to handle with incorrect transformation
+        if x_crop_min >= x_crop_max:
+            x_crop_min = 0
+            x_crop_max = width - 1
+        if y_crop_min >= y_crop_max:
+            y_crop_min = 0
+            y_crop_max = height - 1
+
         crop_image = cv2.resize(
             corrected_image[y_crop_min:y_crop_max, x_crop_min:x_crop_max],
             (width, height),

@@ -33,7 +33,7 @@ class CommonLineDetector(ABC):
         Args:
             config_file (str, optional): Path to the configuration file. Defaults to None.
         """
-        self.config = None
+        self.config = {}
         if (
             config_file is not None
             and os.path.splitext(config_file)[-1].lower() == ".yaml"
@@ -41,8 +41,6 @@ class CommonLineDetector(ABC):
         ):
             with open(config_file, "r", encoding="utf-8") as yamlfile:
                 self.config = yaml.load(yamlfile, Loader=yaml.FullLoader)
-        else:
-            raise ValueError(r"The configuration file '{config_file}' does not exist")
 
     @abstractmethod
     def detect_lines(self, img: np.ndarray) -> np.ndarray:
@@ -181,10 +179,7 @@ class LineSegmentDetector(CommonLineDetector):
         lsd = cv2.createLineSegmentDetector(0)
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         gray = cv2.GaussianBlur(gray, (self.gaussian_kernel_size, self.gaussian_kernel_size), 0)
-        # Detect lines in the image
-        # Returns a NumPy array of type N x 1 x 4 of float32
-        # such that the 4 numbers in the last dimension are (x1, y1, x2, y2)
-        # These denote the start and end positions of a line
+
         lsd_lines = lsd.detect(gray)[0]
         lsd_lines = lsd_lines[:, 0]
 

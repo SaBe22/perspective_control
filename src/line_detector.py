@@ -71,7 +71,7 @@ class CommonLineDetector(ABC):
             display_img = display_img[:,:,::-1]
 
         plt.imshow(display_img)
-        plt.show()
+        plt.show(block=True)
 
     @staticmethod
     def keep_vertical_lines(lines: np.ndarray, acceptable_angle_offset: float =15) -> np.ndarray:
